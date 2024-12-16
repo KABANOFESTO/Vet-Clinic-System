@@ -66,10 +66,22 @@ const Login = () => {
                         role: jsonPayload.role,
                     }));
 
-                    if (jsonPayload.role === 'ADMIN') {
-                        window.location.href = 'http://127.0.0.1:5501/adminDash.html';
-                    } else {
-                        window.location.href = '/';
+                    // Redirect based on the user's role
+                    switch (jsonPayload.role) {
+                        case 'ADMIN':
+                            window.location.href = '/admin';
+                            break;
+                        case 'VETERINARIAN':
+                            window.location.href = '/vdash';
+                            break;
+                        case 'RECEPTIONIST':
+                            window.location.href = '/Receptionist';
+                            break;
+                        case 'NURSE':
+                            window.location.href = '/nurse';
+                            break;
+                        default:
+                            window.location.href = '/';
                     }
                 } else {
                     throw new Error('Token not defined in the response.');

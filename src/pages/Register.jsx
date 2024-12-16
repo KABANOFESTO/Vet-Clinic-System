@@ -82,7 +82,7 @@ const Register = () => {
             if (response.ok) {
                 setSuccessMessage(responseText || 'Registration successful!');
                 setTimeout(() => {
-                    window.location.href = '/';
+                    window.location.href = '/login';
                 }, 2000);
             } else {
                 // Handle error responses
