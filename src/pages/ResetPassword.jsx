@@ -56,7 +56,7 @@ const ResetPassword = () => {
     }
 
     try {
-      const response = await fetch('Endpoint_goes_here!!!', {
+      const response = await fetch('http://localhost:8080/auth/reset-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

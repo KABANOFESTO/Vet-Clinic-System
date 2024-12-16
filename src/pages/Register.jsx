@@ -13,6 +13,8 @@ const Register = () => {
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
+    const validRoles = ['VETERINARIAN', 'NURSE', 'RECEPTIONIST'];
+
     const validateForm = () => {
         const errors = {};
         let isValid = true;
@@ -33,8 +35,8 @@ const Register = () => {
             isValid = false;
         }
 
-        if (!role) {
-            errors.role = 'Please select a role';
+        if (!validRoles.includes(role)) {
+            errors.role = 'Please select a valid role';
             isValid = false;
         }
 
@@ -51,44 +53,41 @@ const Register = () => {
         e.preventDefault();
         setErrorMessage('');
         setSuccessMessage('');
-
+    
         if (!validateForm()) return;
-
+    
         setLoading(true);
-
+    
         try {
             const registrationData = {
                 username: fullName.trim(),
                 email: email.trim(),
-                password: password,
-                role: role,
+                password,
+                role,
             };
-
-            const response = await fetch('Endpoint_goes_here!!', {
+    
+            const response = await fetch('http://localhost:8080/api/users/signup', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(registrationData),
             });
-
+    
+            // Get the response text first
             const responseText = await response.text();
-
-            let data;
-            try {
-                data = JSON.parse(responseText);
-            } catch (parseError) {
-                throw new Error(responseText || 'Invalid server response');
+            console.log('Raw response:', responseText);
+    
+            // Check if the response indicates success
+            if (response.ok) {
+                setSuccessMessage(responseText || 'Registration successful!');
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            } else {
+                // Handle error responses
+                setErrorMessage(responseText || 'Registration failed');
             }
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Registration failed');
-            }
-
-            setSuccessMessage(data.message || 'Registration successful!');
-            setTimeout(() => {
-                window.location.href = '/';
-            }, 2000);
         } catch (error) {
             console.error('Registration error:', error);
             setErrorMessage(error.message || 'An error occurred during registration');
@@ -112,7 +111,9 @@ const Register = () => {
                         {successMessage && <div className="alert alert-success">{successMessage}</div>}
                         <form onSubmit={handleSubmit}>
                             <div className="form-input">
+                                <label htmlFor="fullName">Full Name</label>
                                 <input
+                                    id="fullName"
                                     type="text"
                                     value={fullName}
                                     onChange={(e) => setFullName(e.target.value)}
@@ -122,7 +123,9 @@ const Register = () => {
                                 {errors.fullName && <div className="error-message">{errors.fullName}</div>}
                             </div>
                             <div className="form-input">
+                                <label htmlFor="email">Email Address</label>
                                 <input
+                                    id="email"
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
@@ -132,7 +135,9 @@ const Register = () => {
                                 {errors.email && <div className="error-message">{errors.email}</div>}
                             </div>
                             <div className="form-input">
+                                <label htmlFor="password">Password</label>
                                 <input
+                                    id="password"
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
@@ -142,26 +147,31 @@ const Register = () => {
                                 {errors.password && <div className="error-message">{errors.password}</div>}
                             </div>
                             <div className="form-input">
+                                <label htmlFor="role">Role</label>
                                 <select
+                                    id="role"
                                     value={role}
                                     onChange={(e) => setRole(e.target.value)}
                                     required
                                 >
                                     <option value="">Select Role</option>
-                                    <option value="Veterinarian">Veterinarian</option>
-                                    <option value="Nurse">Nurse</option>
-                                    <option value="Receptionist">Receptionist</option>
+                                    {validRoles.map((roleOption) => (
+                                        <option key={roleOption} value={roleOption}>
+                                            {roleOption}
+                                        </option>
+                                    ))}
                                 </select>
                                 {errors.role && <div className="error-message">{errors.role}</div>}
                             </div>
                             <div className="form-check mb-3">
                                 <input
+                                    id="terms"
                                     type="checkbox"
                                     checked={termsAccepted}
                                     onChange={() => setTermsAccepted(!termsAccepted)}
                                     required
                                 />
-                                <label>
+                                <label htmlFor="terms">
                                     I agree to the terms & conditions
                                 </label>
                                 {errors.terms && <div className="error-message">{errors.terms}</div>}
@@ -169,7 +179,9 @@ const Register = () => {
                             <button type="submit" className="btn btn-primary" disabled={loading}>
                                 {loading ? 'Registering...' : 'Register'}
                             </button>
-                            <p style={{ color: 'white' }}>Already have an account? <a href="/login" style={{ color: 'white' }}>Login here</a></p>
+                            <p style={{ color: 'white' }}>
+                                Already have an account? <a href="/login" style={{ color: 'white' }}>Login here</a>
+                            </p>
                         </form>
                     </div>
                 </div>

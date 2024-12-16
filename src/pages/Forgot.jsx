@@ -25,7 +25,7 @@ const Forgot = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch("endpoint_here!!!", {
+            const response = await fetch("http://localhost:8080/auth/forgot-password", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
