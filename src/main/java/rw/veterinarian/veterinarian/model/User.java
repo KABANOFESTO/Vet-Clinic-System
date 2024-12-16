@@ -26,11 +26,10 @@ public class User {
 
     private String username;
 
-    // Role field - Enum representing user roles (like ADMIN, USER, etc.)
     @Enumerated(EnumType.STRING)
+    @Column(name = "role", length = 50)  // Add this line
     private Role role;  
 
-    // Token for password reset functionality
     @Column(name = "reset_password_token")
     private String resetPasswordToken;
 }
