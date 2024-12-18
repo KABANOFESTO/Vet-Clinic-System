@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const Forgot = () => {
+const ForgotPassword = () => {
     const [email, setEmail] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
@@ -9,9 +9,11 @@ const Forgot = () => {
     const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
     const handleResetPassword = async () => {
+        // Reset previous messages
         setErrorMessage("");
         setSuccessMessage("");
 
+        // Validate email
         if (!email) {
             setErrorMessage("Please enter your email address");
             return;
@@ -22,6 +24,7 @@ const Forgot = () => {
             return;
         }
 
+        // Set loading state
         setIsLoading(true);
 
         try {
@@ -33,19 +36,33 @@ const Forgot = () => {
                 body: JSON.stringify({ email }),
             });
 
-            if (!response.ok) {
+            // Improved response handling
+            const contentType = response.headers.get('content-type');
+            let data;
+
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                // If not JSON, try to parse text as JSON or use as error message
                 const text = await response.text();
-                throw new Error(
-                    text.includes("<!DOCTYPE html>")
-                        ? "Server error: received unexpected HTML response"
-                        : "Failed to send reset email. Please try again later"
-                );
+                try {
+                    data = JSON.parse(text);
+                } catch {
+                    // If parsing fails, treat the text as an error message
+                    throw new Error(text || "Unexpected server response");
+                }
             }
 
-            const data = await response.json();
-            setSuccessMessage("Password reset email sent successfully!");
+            // Check if response was successful
+            if (!response.ok) {
+                throw new Error(data.message || "Failed to send reset email");
+            }
+
+            // Success scenario
+            setSuccessMessage(data.message || "Password reset email sent successfully!");
             setEmail("");
         } catch (error) {
+            // Catch and display any errors
             setErrorMessage(error.message);
             console.error("Error:", error);
         } finally {
@@ -147,9 +164,6 @@ const styles = {
         transition: "background-color 0.2s",
         fontSize: "1rem",
     },
-    buttonHover: {
-        background: "#1565c0",
-    },
     errorMessage: {
         color: "#d32f2f",
         marginTop: "0.5rem",
@@ -162,4 +176,4 @@ const styles = {
     },
 };
 
-export default Forgot;
+export default ForgotPassword;

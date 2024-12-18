@@ -1,7 +1,50 @@
-import React from "react";
-import '../css/style.css';
+import React, { useState } from "react";
+import "../css/style.css";
 
 const Contact = () => {
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "",
+        subject: "",
+        message: "",
+    });
+
+    const [successMessage, setSuccessMessage] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+    
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        try {
+            const response = await fetch("http://localhost:8080/api/contact", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData),
+            });
+
+            if (response.ok) {
+                setSuccessMessage("Your message has been sent successfully!");
+                setFormData({ name: "", email: "", subject: "", message: "" });
+                setErrorMessage("");
+            } else {
+                setErrorMessage("Failed to send your message. Please try again.");
+                setSuccessMessage("");
+            }
+        } catch (error) {
+            setErrorMessage("An error occurred. Please try again later.");
+            setSuccessMessage("");
+        }
+    };
+
     return (
         <div className="container-fluid contact bg-light py-5">
             <div className="container py-5">
@@ -14,9 +57,7 @@ const Contact = () => {
                         <div className="bg-white rounded p-4">
                             <div className="text-center mb-4">
                                 <i className="fas fa-map-marker-alt fa-3x text-primary"></i>
-                                <h4 className="text-primary">
-                                    <address></address>
-                                </h4>
+                                <h4 className="text-primary">Address</h4>
                                 <p className="mb-0">Kigali City, Rwanda</p>
                             </div>
                             <div className="text-center mb-4">
@@ -34,10 +75,9 @@ const Contact = () => {
                     <div className="col-lg-8">
                         <h3 className="mb-2">Send us a message</h3>
                         <p className="mb-4">
-                            The contact form is currently inactive. Get a functional and
-                            working contact form with Vateriarian in a few minutes.
+                            Fill in the form below to share your feedback. We value your thoughts!
                         </p>
-                        <form>
+                        <form onSubmit={handleSubmit}>
                             <div className="row g-3">
                                 <div className="col-md-6">
                                     <div className="form-floating">
@@ -45,7 +85,11 @@ const Contact = () => {
                                             type="text"
                                             className="form-control border-0"
                                             id="name"
+                                            name="name"
                                             placeholder="Your Name"
+                                            value={formData.name}
+                                            onChange={handleChange}
+                                            required
                                         />
                                         <label htmlFor="name">Your Name</label>
                                     </div>
@@ -56,7 +100,11 @@ const Contact = () => {
                                             type="email"
                                             className="form-control border-0"
                                             id="email"
+                                            name="email"
                                             placeholder="Your Email"
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                            required
                                         />
                                         <label htmlFor="email">Your Email</label>
                                     </div>
@@ -67,7 +115,11 @@ const Contact = () => {
                                             type="text"
                                             className="form-control border-0"
                                             id="subject"
+                                            name="subject"
                                             placeholder="Subject"
+                                            value={formData.subject}
+                                            onChange={handleChange}
+                                            required
                                         />
                                         <label htmlFor="subject">Subject</label>
                                     </div>
@@ -76,9 +128,13 @@ const Contact = () => {
                                     <div className="form-floating">
                                         <textarea
                                             className="form-control border-0"
-                                            placeholder="Leave a message here"
                                             id="message"
+                                            name="message"
+                                            placeholder="Leave a message here"
                                             style={{ height: "160px" }}
+                                            value={formData.message}
+                                            onChange={handleChange}
+                                            required
                                         ></textarea>
                                         <label htmlFor="message">Message</label>
                                     </div>
@@ -90,6 +146,12 @@ const Contact = () => {
                                 </div>
                             </div>
                         </form>
+                        {successMessage && (
+                            <div className="alert alert-success mt-4">{successMessage}</div>
+                        )}
+                        {errorMessage && (
+                            <div className="alert alert-danger mt-4">{errorMessage}</div>
+                        )}
                     </div>
                     <div className="col-12">
                         <div className="rounded">
