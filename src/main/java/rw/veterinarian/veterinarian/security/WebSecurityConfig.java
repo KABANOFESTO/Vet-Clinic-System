@@ -63,7 +63,9 @@ public class WebSecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/signup", "/api/users/login","/api/users/delete/**", "/auth/forgot-password",
+                        .requestMatchers("/api/users/signup", "/api/users/login", "/api/users/delete/**",
+                                "/api/appointments", "/api/contact", "/api/staff", "/api/inventory/**",
+                                "/api/inventory", "/auth/forgot-password", "/api/patients",
                                 "/auth/reset-password", "/api/users/all")
                         .permitAll()
                         .anyRequest().authenticated())
@@ -80,8 +82,7 @@ public class WebSecurityConfig {
                 "http://localhost:5173",
                 "http://127.0.0.1:5501",
                 "http://localhost:3000",
-                "http://127.0.0.1:5500"
-        ));
+                "http://127.0.0.1:5500"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList(

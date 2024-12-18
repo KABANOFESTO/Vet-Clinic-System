@@ -18,6 +18,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
+@CrossOrigin(origins = "http://localhost:5173")
 public class UserController {
 
     private final IUserService userService;
@@ -52,7 +53,8 @@ public class UserController {
 
     // Helper method to validate role
     private boolean isValidRole(Role role) {
-        return role != null && (role == Role.VETERINARIAN || role == Role.RECEPTIONIST || role == Role.NURSE || role == Role.ADMIN);
+        return role != null
+                && (role == Role.VETERINARIAN || role == Role.RECEPTIONIST || role == Role.NURSE || role == Role.ADMIN);
     }
 
     // Endpoint for user login
@@ -84,26 +86,10 @@ public class UserController {
 
     // Endpoint to fetch all users (only accessible by ADMIN)
     @GetMapping("/all")
-    public ResponseEntity<?> getAllUsers(@RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<?> getAllUsers() {
         try {
-            if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorization token is required");
-            }
-
-            String jwtToken = authorizationHeader.substring(7);
-            Claims claims = jwtUtil.extractClaims(jwtToken);
-
-            String userRole = claims.get("role", String.class);
-
-            if (!Role.ADMIN.name().equals(userRole)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied: Insufficient privileges");
-            }
-
             List<User> users = userService.getUsers();
             return ResponseEntity.ok(users);
-
-        } catch (JwtException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired token");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An error occurred while fetching the users");
@@ -125,33 +111,10 @@ public class UserController {
 
     // Endpoint to delete a user by email (only accessible by ADMIN)
     @DeleteMapping("/delete/{email}")
-    public ResponseEntity<String> deleteUser(
-            @RequestHeader("Authorization") String authorizationHeader,
-            @PathVariable("email") String email) {
+    public ResponseEntity<String> deleteUser(@PathVariable("email") String email) {
         try {
-            if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorization token is required");
-            }
-
-            String jwtToken = authorizationHeader.substring(7);
-            Claims claims = jwtUtil.extractClaims(jwtToken);
-
-            String userRole = claims.get("role", String.class);
-            String tokenUserEmail = claims.getSubject(); // Get email from token
-
-            if (!Role.ADMIN.name().equals(userRole)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied: Only administrators can delete users");
-            }
-
-            if (email.equals(tokenUserEmail)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Cannot delete your own admin account");
-            }
-
             userService.deleteUser(email);
             return ResponseEntity.ok("User deleted successfully");
-
-        } catch (JwtException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired token");
         } catch (UsernameNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found: " + e.getMessage());
         } catch (Exception e) {
@@ -159,4 +122,5 @@ public class UserController {
                     .body("Error deleting user: " + e.getMessage());
         }
     }
+
 }
